@@ -5,6 +5,9 @@ import logging
 import os
 import datetime as dt
 from test import is_empty
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def extract(url="https://newsapi.org/v2/top-headlines",
             api_key=os.getenv('api_key'),
@@ -49,6 +52,7 @@ def transform(data):
         file_path = 'transformed.csv'
         df = df.fillna('Unknown')
         df['ID'] = range(len(df))
+        df = df[['ID', 'author', 'title' , 'description', 'publishedAt', 'source_name']]
         df.to_csv(file_path, index=False)
         message = f"Data transformed successfully and saved to file: {file_path}"
         logging.info(message)
@@ -64,5 +68,3 @@ def transform(data):
 transformed = transform(extracted)
 
 is_empty(transformed, pd.DataFrame)
-
-print(transformed)

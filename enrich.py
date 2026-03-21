@@ -5,6 +5,9 @@ import logging
 import sys
 from test import file_exists
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def topic_classifier(file_path,
                      labels=["world", "politics", "business", 'technology', 'science', 'health',
@@ -26,6 +29,7 @@ def topic_classifier(file_path,
         df = df.drop(columns=['scores', 'labels'])
         file_path = 'topic.csv'
         df['ID'] = range(len(df))
+        df = df[['ID', 'label', 'label_probability']]
         df.to_csv(file_path, index=False)
         message = f"Successfully classified the topics of {len(df)} records into {file_path}."
         logging.info(message)
@@ -51,6 +55,7 @@ def sentiment_classifier(file_path):
         df = df.drop('classification', axis=1)
         file_path = 'sentiment.csv'
         df['ID'] = range(len(df))
+        df = df[['ID', 'sentiment', 'sentiment_probability']]
         df.to_csv(file_path, index=False)
         message = f"Successfully classified the sentiment of {len(df)} records into {file_path}."
         logging.info(message)
@@ -64,3 +69,17 @@ def sentiment_classifier(file_path):
 
 
 sentiment_classifier('transformed.csv')
+
+
+
+transformed_df = pd.read_csv('transformed.csv')
+sentiment_df = pd.read_csv('sentiment.csv')
+topic_df = pd.read_csv('topic.csv')
+
+result = pd.merge(transformed_df, sentiment_df, how='inner', on='ID')
+result = pd.merge(result, topic_df, how='inner', on='ID')
+
+result['published_at'] = pd.to_datetime(result['publishedAt']).dt.date
+
+result[['ID', 'source_name', 'title', 'author', 'published_at', 'description',
+        'label' , 'sentiment', 'label_probability', 'sentiment_probability']].to_csv('article_fct.csv', index=False)

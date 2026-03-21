@@ -5,3 +5,5 @@ topic.csv
 transformed.csv
 config.py
 .env
+logs/
+article_fct.csv
