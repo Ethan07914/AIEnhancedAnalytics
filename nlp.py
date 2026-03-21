@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def topic_classifier(file_path,
+def topic_classifier(file_path='transformed.csv',
                      labels=["world", "politics", "business", 'technology', 'science', 'health',
                              'entertainment', 'travel', 'food & drink', 'fashion', 'environment']
                      ):
@@ -27,10 +27,10 @@ def topic_classifier(file_path,
         df['label_probability'] = df.apply(lambda row: row['scores'][0], axis=1)
         df['label'] = df.apply(lambda row: row['labels'][0], axis=1)
         df = df.drop(columns=['scores', 'labels'])
-        file_path = 'topic.csv'
+        load_path = 'topic.csv'
         df['ID'] = range(len(df))
         df = df[['ID', 'label', 'label_probability']]
-        df.to_csv(file_path, index=False)
+        df.to_csv(load_path, index=False)
         message = f"Successfully classified the topics of {len(df)} records into {file_path}."
         logging.info(message)
         print(message)
@@ -39,11 +39,8 @@ def topic_classifier(file_path,
         logging.error(error_message)
         print(error_message)
         sys.exit()
-    return topic_classifications
 
-topic_classifier('transformed.csv')
-
-def sentiment_classifier(file_path):
+def sentiment_classifier(file_path='transformed.csv'):
     file_exists(file_path)
     try:
         descriptions = pd.read_csv(file_path)['description'].tolist()
@@ -53,10 +50,10 @@ def sentiment_classifier(file_path):
         df['sentiment'] = df.apply(lambda row: row['classification']['label'], axis=1)
         df['sentiment_probability'] = df.apply(lambda row: row['classification']['score'], axis=1)
         df = df.drop('classification', axis=1)
-        file_path = 'sentiment.csv'
+        load_path = 'sentiment.csv'
         df['ID'] = range(len(df))
         df = df[['ID', 'sentiment', 'sentiment_probability']]
-        df.to_csv(file_path, index=False)
+        df.to_csv(load_path, index=False)
         message = f"Successfully classified the sentiment of {len(df)} records into {file_path}."
         logging.info(message)
         print(message)
@@ -65,21 +62,3 @@ def sentiment_classifier(file_path):
         logging.error(error_message)
         print(error_message)
         sys.exit()
-    return text_classifications
-
-
-sentiment_classifier('transformed.csv')
-
-
-
-transformed_df = pd.read_csv('transformed.csv')
-sentiment_df = pd.read_csv('sentiment.csv')
-topic_df = pd.read_csv('topic.csv')
-
-result = pd.merge(transformed_df, sentiment_df, how='inner', on='ID')
-result = pd.merge(result, topic_df, how='inner', on='ID')
-
-result['published_at'] = pd.to_datetime(result['publishedAt']).dt.date
-
-result[['ID', 'source_name', 'title', 'author', 'published_at', 'description',
-        'label' , 'sentiment', 'label_probability', 'sentiment_probability']].to_csv('article_fct.csv', index=False)
