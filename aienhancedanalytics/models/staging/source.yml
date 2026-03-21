@@ -8,3 +8,21 @@ sources:
 models:
   - name: stg_newsapi_article
     description: 'Table that holds article data'
+    columns:
+      - name: article_pk
+        description: 'Primary key, identifies a unique article written by an author with a specific title on a certain day'
+        data_tests:
+          - not_null
+          - unique
+      - name: sentiment
+        description: 'Descriptive field that states if an article had a positive or negative sentiment'
+        data_tests:
+          - not_null
+      - name: label
+        description: 'Descriptive field that states what high level topic an article is referring to'
+        data_tests:
+          - not_null
+
+
+
+

@@ -10,5 +10,5 @@ SELECT
        label_probability,
        sentiment_probability,
        current_timestamp() as ingested_at
-from
+FROM
        {{ source('articles', 'article') }}

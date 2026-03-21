@@ -1,0 +1,5 @@
+version: 2
+
+models:
+  - name: article_fct
+    description: 'Table that holds enriched data about articles for end users to query'
