@@ -6,5 +6,11 @@ transformed.csv
 config.py
 .env
 logs/
-article_fct.csv
+aienhancedanalytics/seeds/article.csv
 extracted.json
+aienhancedanalytics/profiles.yml
+aienhancedanalytics/.user.yml
+aienhancedanalytics/target
+aienhancedanalytics/aienhancedanalytics-e8d6557ea060.json
+aienhancedanalytics/logs
+aienhancedanalytics/dbt_packages

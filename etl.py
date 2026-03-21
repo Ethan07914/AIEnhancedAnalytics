@@ -5,7 +5,6 @@ import logging
 import os
 import datetime as dt
 import json
-
 from AIEnhancedAnalytics.nlp import sentiment_classifier, topic_classifier
 from test import file_exists
 from dotenv import load_dotenv
@@ -79,6 +78,7 @@ def load():
 
         result = result[['ID', 'source_name', 'title', 'author', 'published_at', 'description',
                 'label' , 'sentiment', 'label_probability', 'sentiment_probability']]
+        result.to_csv('aienhancedanalytics/seeds/article.csv', index=False)
         message = f"Successfully enriched {len(result)} records."
         logging.info(message)
         print(message)

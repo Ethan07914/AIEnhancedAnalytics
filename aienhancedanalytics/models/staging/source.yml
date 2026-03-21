@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: articles
+    schema: dbt_ethan
+    tables:
+      - name: article
+models:
+  - name: stg_newsapi_article
+    description: 'Table that holds article data'
