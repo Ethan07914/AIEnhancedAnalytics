@@ -1,6 +1,7 @@
 .idea
 __pycache__/
-data.csv
-enr.csv
-topics.csv
+sentiment.csv
+topic.csv
+transformed.csv
 config.py
+.env

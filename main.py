@@ -1,22 +1,26 @@
 import requests
-from config import api_key
 import sys
 import pandas as pd
 import logging
+import os
 import datetime as dt
 from test import is_empty
 
 def extract(url="https://newsapi.org/v2/top-headlines",
-            api_key=api_key,
+            api_key=os.getenv('api_key'),
             date=dt.datetime.now(),
             language='en',
-            sort_by='relevancy'):
+            sort_by='relevancy',
+            page_size=100,
+            page=1):
     params = {
         'apiKey': api_key,
         'from_param': date,
         'to': date,
         'language': language,
-        'sort_by': sort_by
+        'sort_by': sort_by,
+        'pageSize': page_size,
+        'page': page
     }
     try:
         response = requests.get(url, params=params)
@@ -43,6 +47,8 @@ def transform(data):
         df['source_name'] = df.apply(lambda row: row['source']['name'], axis=1)
         df = df.drop(columns=['url', 'urlToImage', 'content', 'source'])
         file_path = 'transformed.csv'
+        df = df.fillna('Unknown')
+        df['ID'] = range(len(df))
         df.to_csv(file_path, index=False)
         message = f"Data transformed successfully and saved to file: {file_path}"
         logging.info(message)
