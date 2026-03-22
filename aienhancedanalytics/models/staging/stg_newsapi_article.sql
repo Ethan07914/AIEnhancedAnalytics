@@ -1,3 +1,9 @@
+{{
+config(
+        materialized='incremental'
+      )
+}}
+
 SELECT
        {{ dbt_utils.generate_surrogate_key(['title', 'author', 'published_at']) }} as article_pk,
        source_name,
@@ -12,3 +18,15 @@ SELECT
        current_timestamp() as ingested_at
 FROM
        {{ source('articles', 'article') }}
+
+{% if is_incremental() %}
+
+WHERE
+      published_at > (select
+                             MAX(published_at)
+                      FROM
+                             {{ this }}
+                      )
+
+{% endif %}
+

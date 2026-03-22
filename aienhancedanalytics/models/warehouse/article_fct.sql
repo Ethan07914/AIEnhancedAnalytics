@@ -1,3 +1,9 @@
+{{
+config(
+        materialized='incremental'
+      )
+}}
+
 SELECT
        article_pk,
        author,
@@ -28,3 +34,14 @@ SELECT
        current_timestamp() as loaded_at
 FROM
        {{ ref('stg_newsapi_article') }}
+
+{% if is_incremental() %}
+
+WHERE
+      published_at > (select
+                             MAX(published_at)
+                      FROM
+                             {{ this }}
+                      )
+
+{% endif %}
