@@ -1,5 +1,6 @@
 SELECT
        article_pk,
+       author,
        source_name,
        title,
        published_at,
@@ -23,6 +24,7 @@ SELECT
        CASE
             WHEN sentiment_probability > (2/3) THEN 1
             ELSE 0
-       END AS is_sentiment_high_confidence
+       END AS is_sentiment_high_confidence,
+       current_timestamp() as loaded_at
 FROM
        {{ ref('stg_newsapi_article') }}

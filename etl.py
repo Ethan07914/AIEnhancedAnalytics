@@ -6,7 +6,8 @@ import os
 import datetime as dt
 import json
 from AIEnhancedAnalytics.nlp import sentiment_classifier, topic_classifier
-from test import file_exists
+from AIEnhancedAnalytics.test import no_records_lost
+from test import file_exists, is_empty
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -50,6 +51,7 @@ def transform():
         df = df.drop(columns=['url', 'urlToImage', 'content', 'source'])
         file_path = 'transformed.csv'
         df = df.fillna('Unknown')
+        df = df.replace('', 'Unknown')
         df['ID'] = range(len(df))
         df = df[['ID', 'author', 'title' , 'description', 'publishedAt', 'source_name']]
         df.to_csv(file_path, index=False)
@@ -91,5 +93,8 @@ def load():
 extract()
 transform()
 sentiment_classifier()
+no_records_lost('transformed.csv', 'sentiment.csv')
 topic_classifier()
+no_records_lost('transformed.csv', 'topic.csv')
 load()
+no_records_lost('transformed.csv', 'aienhancedanalytics/seeds/article.csv')
