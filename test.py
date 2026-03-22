@@ -2,14 +2,18 @@ import logging
 import os
 import pandas as pd
 import sys
+from prefect import task
 
+@task
 def is_empty(data, desired_type):
     assert isinstance(data, desired_type)
     assert len(data) != 0
 
+@task
 def file_exists(file_path):
     assert os.path.exists(file_path)
 
+@task
 def no_records_lost(prev_file, curr_file):
     prev_df = pd.read_csv(prev_file)
     curr_df = pd.read_csv(curr_file)

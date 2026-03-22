@@ -5,13 +5,13 @@ import logging
 import os
 import datetime as dt
 import json
-from AIEnhancedAnalytics.nlp import sentiment_classifier, topic_classifier
-from AIEnhancedAnalytics.test import no_records_lost
-from test import file_exists, is_empty
+from test import file_exists
 from dotenv import load_dotenv
+from prefect import task
 
 load_dotenv()
 
+@task
 def extract(url="https://newsapi.org/v2/top-headlines",
             api_key=os.getenv('api_key'),
             date=dt.datetime.now(),
@@ -41,7 +41,7 @@ def extract(url="https://newsapi.org/v2/top-headlines",
         logging.error(error_message)
         print(error_message)
         sys.exit()
-
+@task
 def transform():
     try:
         with open('extracted.json', 'r') as infile:
@@ -65,7 +65,7 @@ def transform():
         sys.exit()
     return df
 
-
+@task
 def load():
     file_exists('topic.csv') and file_exists('sentiment.csv') and file_exists('transformed.csv')
     try:
@@ -90,11 +90,3 @@ def load():
         print(error_message)
         sys.exit()
 
-extract()
-transform()
-sentiment_classifier()
-no_records_lost('transformed.csv', 'sentiment.csv')
-topic_classifier()
-no_records_lost('transformed.csv', 'topic.csv')
-load()
-no_records_lost('transformed.csv', 'aienhancedanalytics/seeds/article.csv')

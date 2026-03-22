@@ -6,9 +6,11 @@ import sys
 from test import file_exists
 import os
 from dotenv import load_dotenv
+from prefect import task
 
 load_dotenv()
 
+@task
 def topic_classifier(file_path='transformed.csv',
                      labels=["world", "politics", "business", 'technology', 'science', 'health',
                              'entertainment', 'travel', 'food & drink', 'fashion', 'environment']
@@ -40,6 +42,7 @@ def topic_classifier(file_path='transformed.csv',
         print(error_message)
         sys.exit()
 
+@task
 def sentiment_classifier(file_path='transformed.csv'):
     file_exists(file_path)
     try:
