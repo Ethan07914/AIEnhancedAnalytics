@@ -16,7 +16,6 @@ def extract(url="https://newsapi.org/v2/top-headlines",
             api_key=os.getenv('api_key'),
             date=dt.datetime.now(),
             language='en',
-            sort_by='relevancy',
             page_size=100,
             page=1):
     params = {
@@ -24,7 +23,6 @@ def extract(url="https://newsapi.org/v2/top-headlines",
         'from_param': date,
         'to': date,
         'language': language,
-        'sort_by': sort_by,
         'pageSize': page_size,
         'page': page
     }
@@ -41,6 +39,7 @@ def extract(url="https://newsapi.org/v2/top-headlines",
         logging.error(error_message)
         print(error_message)
         sys.exit()
+
 @task
 def transform():
     try:
