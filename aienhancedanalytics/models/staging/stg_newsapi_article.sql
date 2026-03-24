@@ -17,7 +17,7 @@ SELECT
        sentiment_probability,
        current_timestamp() as ingested_at
 FROM
-       {{ source('articles', 'article') }}
+       {{ ref("article") }}
 
 {% if is_incremental() %}
 
