@@ -9,21 +9,27 @@ import logging
 
 @task
 def run_dbt_build(project_dir="aienhancedanalytics"):
-    assert os.path.exists(project_dir)
-    try:
-        command = [
-            "dbt", "build",
-            "--project-dir", project_dir,
-            "--profiles-dir", project_dir
-        ]
-        result = subprocess.run(command, check=True, text=True)
-        message = "dbt build completed successfully!"
-        logging.info(message)
-        print(message)
-    except subprocess.CalledProcessError as e:
-        error_message = f"dbt build failed with return code {e.returncode}"
-        logging.error(error_message)
-        sys.exit()
+
+    if not os.path.exists(project_dir):
+        raise FileNotFoundError(f"{project_dir} not found")
+
+    command = [
+        "dbt", "build",
+        "--project-dir", project_dir,
+        "--profiles-dir", project_dir
+    ]
+
+    result = subprocess.run(command, text=True, capture_output=True)
+
+    print("STDOUT:\n", result.stdout)
+    print("STDERR:\n", result.stderr)
+
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"dbt build failed\n\nSTDOUT:\n{result.stdout}\n\nSTDERR:\n{result.stderr}"
+        )
+
+    logging.info("dbt build completed successfully!")
 
 @flow
 def main():
