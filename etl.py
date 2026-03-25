@@ -14,7 +14,7 @@ load_dotenv()
 @task
 def extract(url="https://newsapi.org/v2/top-headlines",
             api_key=os.getenv('api_key'),
-            date=dt.datetime.now(),
+            date=dt.datetime.now().strftime('%Y-%m-%d'),
             language='en',
             page_size=100,
             page=1):
