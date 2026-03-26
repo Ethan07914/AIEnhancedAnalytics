@@ -3,23 +3,155 @@
 ## Overview
 
 This project showcases a complete orchestrated ETL/NLP pipeline which takes raw news data from an API and enriches the data by
-assigning a sentiment and topic label to each article description which can be explored through natural language or via dashboard. 
+assigning a sentiment and topic label to each article description, which can be explored through natural language or via the dashboard. 
 
 ## Natural Language Processing 
 
-- **Text Classification:** Article descriptions where passed through the open source 'distilbert/distilbert-base-uncased-finetuned-sst-2-english' model to assign a sentiment.
-- **Zero-Shot Classification:** Article descriptions and a list of labels where passed through the open source 'tasksource/deberta-small-long-nli' to assign a label.
+For the Natural Language Processing aspect of my prroject I utilised two open-source models which can be found on Hugging Face https://huggingface.co, an AI community platform. Both models were selected due to their relative leanness, as loading large models onto my computer would not have been possible, and when deployed on Prefect Cloud, would have massively increased compute time due to the initial load.
+
+- **Text Classification:** Article descriptions were passed through the open source 'distilbert/distilbert-base-uncased-finetuned-sst-2-english' model to assign a sentiment.
+- **Zero-Shot Classification:** Article descriptions and a list of labels were passed through the open source 'tasksource/deberta-small-long-nli' to assign a label.
 
 ## Conversational Analytics
 
-[![Watch the Demo](https://res.cloudinary.com/dmeh864ji/video/upload/v1774555521/ThoughtSpot_j1uuxi.mp4)
+For the Conversational Analytics aspect of my project, I opted to trial ThoughtSpot, a platform which allows you to ask questions of your data in natural language and receive in-depth analysis. Utilising Conversational Analytics further encouraged me to keep my data model simple to ensure no joins could be misinterpreted, and the location of required fields would be easy.
 
-## Dataflow
+When designing a data model for use via Conversational Analytics, I would recommend a simple star schema or a single denormalised wide table if feasible, rather than breaking out columns into many normalised tables. Unfortunately sharing access to my ThoughtSpot instance would be a security risk and could incur a cost to my GCP account, so I have put together a Looker Studio dashboard which can be found in the Dashboard section below, where you can view my analysis.
+
+### Demo
+
+[![Watch the Demo](https://res.cloudinary.com/dmeh864ji/video/upload/so_1/v1774557197/Recording_2026-03-26_203257_dmazp7.jpg)](https://res.cloudinary.com/dmeh864ji/video/upload/v1774557197/Recording_2026-03-26_203257_dmazp7.mp4)
+
+## Dataflow & Model
+
+Data model was deliberately kept simple as it was unecessary to split data out into a star schema due to their being few dimensions, and given that Conversational Analytics has the highest accuracy when querying a single table. If your interested in seeing a star schema implementation I have done, please view this repository https://github.com/Ethan07914/StockMarketAnalytics.
+
+### Dataflow
+
+```mermaid
+flowchart LR
+    A["**extracted.json**
+Raw NewsAPI extraction
+(JSON)"] ----> B["**transformed.csv**"]
+    B -- sentiment model --> C["**sentiment.csv**"]
+    B -- topic model --> D["**topic.csv**"]
+    B -- join on ID --> E["**article.csv**
+source_name
+title
+author
+published_at
+description
+label
+sentiment
+label_probability
+sentiment_probability"]
+    C -- join on ID --> E
+    D -- join on ID --> E
+    E -- load to warehouse --> F["**stg_newsapi_article**
+(BigQuery staging)
+
+article_pk STRING
+source_name STRING
+title STRING
+author STRING
+published_at DATE
+description STRING
+label STRING
+sentiment STRING
+label_probability FLOAT64
+sentiment_probability FLOAT64
+ingested_at TIMESTAMP"]
+    F -- dbt transformations
+flags + metrics --> G["**article_fct**
+(dbt fact table)
+
+article_pk STRING
+author STRING
+source_name STRING
+title STRING
+published_at DATE
+description STRING
+label STRING
+sentiment STRING
+is_positive INT64
+is_negative INT64
+label_probability FLOAT64
+sentiment_probability FLOAT64
+is_label_high_confidence INT64
+is_sentiment_high_confidence INT64
+loaded_at TIMESTAMP"]
+
+    style A fill:#757575,color:#ffffff
+    style B fill:#00C853,color:#ffffff
+    style C fill:#00C853,color:#ffffff
+    style D fill:#00C853,color:#ffffff
+    style E fill:#00C853,color:#ffffff
+    style F fill:#2962FF,color:#ffffff
+    style G fill:#2962FF,color:#ffffff
+    linkStyle 1 stroke:#FFD600,fill:none
+    linkStyle 2 stroke:#FFD600,fill:none
+    linkStyle 3 stroke:#FFD600,fill:none
+    linkStyle 4 stroke:#FFD600,fill:none
+    linkStyle 5 stroke:#FFD600,fill:none
+    linkStyle 6 stroke:#FF6D00,fill:none
+    linkStyle 7 stroke:#FF6D00,fill:none
+```
+
+### DDL 
+
+```SQL
+CREATE TABLE
+ stg_newsapi_article
+( article_pk STRING,
+  source_name STRING,
+  title STRING,
+  author STRING,
+  published_at DATE,
+  description STRING,
+  label STRING,
+  sentiment STRING,
+  label_probability FLOAT64,
+  sentiment_probability FLOAT64,
+  ingested_at TIMESTAMP );
+```
+
+```SQL
+CREATE TABLE
+ article_fct
+( article_pk STRING,
+  author STRING,
+  source_name STRING,
+  title STRING,
+  published_at DATE,
+  description STRING,
+  label STRING,
+  sentiment STRING,
+  is_positive INT64,
+  is_negative INT64,
+  label_probability FLOAT64,
+  sentiment_probability FLOAT64,
+  is_label_high_confidence INT64,
+  is_sentiment_high_confidence INT64,
+  loaded_at TIMESTAMP
+);
+```
+
+## Pipeline
+
+- Data requested from News API via Python script and saved to JSON file
+- Data transformed and unnested from dictionaries using Pandas and saved to a CSV file
+- Data enriched by a Sentiment Classifier model and saved to CSV
+- Data enriched by a Topic Classifier model and saved to CSV
+- CSVs converted to Data Frames, joined, and saved to a singular CSV file
+- CSV file seeded via dbt core onto Google Cloud
+- Surrogate keys generated in staging dbt model
+- New fields derived in warehouse dbt model
+- Entire pipeline alongside testing orchestrated using Prefect Cloud
  
 ```mermaid
 ---
 config:
-  theme: redux-dark
+  theme: forest
 ---
 flowchart TB
  subgraph subGraph0["ETL Pipeline"]
@@ -71,11 +203,13 @@ flowchart TB
 
 ## Orchestration & CI/CD 
 
+ I selected Prefect as my orchestrator due to the generous free tier and simple setup. Configuring Prefect did not require me to restructure my project or write additional code; it worked out of the box; I just had to specify if a function was the main flow (entrypoint) or just a task. 
+ 
+ Using other orchestrators would have meant dramatic restructuring of the project, many lines of additional code, and even changing system settings on my computer. Not to mention, they would likely come with additional cost for hosting and compute resources.
+ It was also easy to connect my GitHub repo to Prefect Cloud and set up a daily cron job via CLI to automate the entire workflow.
+
 - **Orchestration:** Pipeline runs daily at 18:00 via Prefect Cloud.
 - **CI/CD:** Prefect Cloud clones the GitHub repository before every run to ensure new changes to the pipeline are introduced.
-- **Setup:** Prefect integrated well with my existing project structure, code and worked out of the box after I installed the package via pip.
-- **Workflow Automation:** It was easy to connect my GitHub repo to Prefect Cloud and set up a daily cron job via CLI to automate the entire workflow.
-- **Other Orchestrators:** Alternatively, Airflow could have been used; however requires additional code and would have been more costly to run via Google Cloud Composer.
 
 ![prefect_run_graph.png](prefect_run_graph.png)
 
