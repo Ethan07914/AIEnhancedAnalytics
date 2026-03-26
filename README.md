@@ -12,6 +12,8 @@ assigning a sentiment and topic label to each article description which can be e
 
 ## Conversational Analytics
 
+[![Watch the Demo](https://res.cloudinary.com/dmeh864ji/video/upload/v1774555521/ThoughtSpot_j1uuxi.mp4)
+
 ## Dataflow
  
 ```mermaid
