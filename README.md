@@ -7,14 +7,14 @@ assigning a sentiment and topic label to each article description, which can be 
 
 ## Natural Language Processing 
 
-For the Natural Language Processing aspect of my prroject I utilised two open-source models which can be found on Hugging Face https://huggingface.co, an AI community platform. Both models were selected due to their relative leanness, as loading large models onto my computer would not have been possible, and when deployed on Prefect Cloud, would have massively increased compute time due to the initial load.
+For the Natural Language Processing aspect of my project, I utilised two open-source models which can be found on Hugging Face https://huggingface.co, an AI community platform. Both models were selected due to their relative leanness, as loading large models onto my computer would not have been possible, and when deployed on Prefect Cloud, would have massively increased compute time due to the initial load.
 
 - **Text Classification:** Article descriptions were passed through the open source 'distilbert/distilbert-base-uncased-finetuned-sst-2-english' model to assign a sentiment.
 - **Zero-Shot Classification:** Article descriptions and a list of labels were passed through the open source 'tasksource/deberta-small-long-nli' to assign a label.
 
 ## Conversational Analytics
 
-For the Conversational Analytics aspect of my project, I opted to trial ThoughtSpot, a platform which allows you to ask questions of your data in natural language and receive in-depth analysis. Utilising Conversational Analytics further encouraged me to keep my data model simple to ensure no joins could be misinterpreted, and the location of required fields would be easy.
+For the Conversational Analytics aspect of my project, I opted to trial ThoughtSpot, a BI platform which allows you to ask questions of your data in natural language and receive in-depth analysis. Utilising Conversational Analytics further encouraged me to keep my data model simple to ensure no joins could be misinterpreted, and the location of required fields would be easy.
 
 When designing a data model for use via Conversational Analytics, I would recommend a simple star schema or a single denormalised wide table if feasible, rather than breaking out columns into many normalised tables. Unfortunately sharing access to my ThoughtSpot instance would be a security risk and could incur a cost to my GCP account, so I have put together a Looker Studio dashboard which can be found in the Dashboard section below, where you can view my analysis.
 
@@ -22,9 +22,12 @@ When designing a data model for use via Conversational Analytics, I would recomm
 
 [![Watch the Demo](https://res.cloudinary.com/dmeh864ji/video/upload/so_1/v1774557197/Recording_2026-03-26_203257_dmazp7.jpg)](https://res.cloudinary.com/dmeh864ji/video/upload/v1774557197/Recording_2026-03-26_203257_dmazp7.mp4)
 
+## Use Case
+A sentiment and topic classification pipeline could be utilised by large digital native companies that receive high volumes of customer reviews. It will allow them to better understand pain points customers are encountering with their products and services to identify areas of their business that require investment and improvement.
+
 ## Dataflow & Model
 
-Data model was deliberately kept simple as it was unecessary to split data out into a star schema due to their being few dimensions, and given that Conversational Analytics has the highest accuracy when querying a single table. If your interested in seeing a star schema implementation I have done, please view this repository https://github.com/Ethan07914/StockMarketAnalytics.
+Data model was deliberately kept simple as it was unecessary to split data out into a star schema due to their being few dimensions, and given that Conversational Analytics has the highest accuracy when querying a single table. If your interested in seeing a star schema implementation I have done, please view this project https://github.com/Ethan07914/StockMarketAnalytics.
 
 ### Dataflow
 
@@ -205,7 +208,7 @@ flowchart TB
 
  I selected Prefect as my orchestrator due to the generous free tier and simple setup. Configuring Prefect did not require me to restructure my project or write additional code; it worked out of the box; I just had to specify if a function was the main flow (entrypoint) or just a task. 
  
- Using other orchestrators would have meant dramatic restructuring of the project, many lines of additional code, and even changing system settings on my computer. Not to mention, they would likely come with additional cost for hosting and compute resources.
+ Using other orchestrators would have meant dramatic restructuring of the project, many lines of additional code, and even changing system settings on my computer. Not to mention, they would likely come with additional costs for hosting and compute resources.
  It was also easy to connect my GitHub repo to Prefect Cloud and set up a daily cron job via CLI to automate the entire workflow.
 
 - **Orchestration:** Pipeline runs daily at 18:00 via Prefect Cloud.
@@ -215,11 +218,16 @@ flowchart TB
 
 ## Dashboard 
 
-- **Dashboard:** A public three-page dashboard was created with Looker Studio 
+New data can be viewed in the dashboard after 18:00 every day.
+
+- **Dashboard:** A publicly accessible three-page dashboard was created with Looker Studio
 - **Link:** https://lookerstudio.google.com/u/1/reporting/34403f0c-3597-4d2d-a69d-7af99cfbe5cf/page/IdtsF
 
+### Page 1
 ![dahboard_page1.png](dahboard_page1.png)
 
+### Page 2
 ![dashboard_page2.png](dashboard_page2.png)
 
+### Page 3
 ![dashboard_page3.png](dashboard_page3.png)
